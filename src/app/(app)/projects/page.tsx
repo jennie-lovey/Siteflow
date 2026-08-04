@@ -1,9 +1,19 @@
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 import { ProjectsListSection } from "@/components/dashboard/ProjectsListSection";
+import { STATUS_OPTIONS } from "@/lib/constants";
+import type { ProjectStatus } from "@/types/database";
 
 export const dynamic = "force-dynamic";
 
-export default async function ProjectsListPage() {
+export default async function ProjectsListPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ status?: string }>;
+}) {
+  const { status } = await searchParams;
+  const initialStatus = STATUS_OPTIONS.find((s) => s.value === status)?.value as
+    | ProjectStatus
+    | undefined;
   const supabase = await createServerSupabaseClient();
 
   const [{ data: projects, error: projectsError }, { data: financials }] = await Promise.all([
@@ -26,5 +36,11 @@ export default async function ProjectsListPage() {
   const allProjects = projects ?? [];
   const financialsByProjectId = new Map((financials ?? []).map((f) => [f.project_id, f]));
 
-  return <ProjectsListSection projects={allProjects} financialsByProjectId={financialsByProjectId} />;
+  return (
+    <ProjectsListSection
+      projects={allProjects}
+      financialsByProjectId={financialsByProjectId}
+      initialStatus={initialStatus}
+    />
+  );
 }

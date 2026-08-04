@@ -84,7 +84,7 @@ export function EstimateVersionEditor({
         {isCurrent && (
           <Button onClick={() => onCreateNewVersion(items)} disabled={creatingVersion || items.length === 0}>
             <RefreshCw className="h-3.5 w-3.5" />
-            {creatingVersion ? "Creating..." : "Client Negotiated — New Version"}
+            {creatingVersion ? "Creating..." : "New Version"}
           </Button>
         )}
       </div>

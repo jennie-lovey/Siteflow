@@ -84,7 +84,7 @@ export default async function ProjectOverviewPage({
 
       <Card>
         <CardHeader>
-          <h2 className="font-semibold text-slate-900">Budget Health</h2>
+          <h2 className="font-semibold text-slate-900">{project.name}</h2>
         </CardHeader>
         <CardBody>
           {hasEstimate || hasExpenses ? (

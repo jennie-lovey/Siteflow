@@ -1,10 +1,13 @@
 "use client";
 
+import Link from "next/link";
 import { Plus } from "lucide-react";
 import { ProjectKanbanCard } from "./ProjectKanbanCard";
 import { STATUS_DOT_STYLES, STATUS_OPTIONS } from "@/lib/constants";
 import type { Project, ProjectFinancials } from "@/types/domain";
 import type { ProjectStatus } from "@/types/database";
+
+const COLUMN_CARD_LIMIT = 5;
 
 export function ProjectKanbanBoard({
   projects,
@@ -18,7 +21,13 @@ export function ProjectKanbanBoard({
   return (
     <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
       {STATUS_OPTIONS.map((status) => {
+        // `projects` is already ordered most-recent-first, so slicing here
+        // keeps the newest work visible without the Board piling up with
+        // every project ever created — the rest is one click away.
         const columnProjects = projects.filter((p) => p.status === status.value);
+        const visibleProjects = columnProjects.slice(0, COLUMN_CARD_LIMIT);
+        const hiddenCount = columnProjects.length - visibleProjects.length;
+
         return (
           <div key={status.value} className="rounded-xl bg-neutral-200/60 p-3">
             <div className="mb-3 flex items-center justify-between px-1">
@@ -43,13 +52,21 @@ export function ProjectKanbanBoard({
                   No projects
                 </p>
               )}
-              {columnProjects.map((project) => (
+              {visibleProjects.map((project) => (
                 <ProjectKanbanCard
                   key={project.id}
                   project={project}
                   financials={financialsByProjectId.get(project.id)}
                 />
               ))}
+              {hiddenCount > 0 && (
+                <Link
+                  href={`/projects?status=${status.value}`}
+                  className="block rounded-lg px-3 py-2 text-center text-xs font-medium text-slate-500 hover:bg-slate-200/70 hover:text-slate-800"
+                >
+                  +{hiddenCount} more — view all
+                </Link>
+              )}
             </div>
           </div>
         );

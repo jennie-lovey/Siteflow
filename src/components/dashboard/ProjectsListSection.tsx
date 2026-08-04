@@ -14,14 +14,16 @@ type StatusFilter = "all" | ProjectStatus;
 export function ProjectsListSection({
   projects,
   financialsByProjectId,
+  initialStatus,
 }: {
   projects: Project[];
   financialsByProjectId: Map<string, ProjectFinancials>;
+  initialStatus?: ProjectStatus;
 }) {
   const router = useRouter();
   const [modalOpen, setModalOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
-  const [statusFilter, setStatusFilter] = useState<StatusFilter>("all");
+  const [statusFilter, setStatusFilter] = useState<StatusFilter>(initialStatus ?? "all");
   const [filterOpen, setFilterOpen] = useState(false);
 
   const filters: { value: StatusFilter; label: string; count: number }[] = [
