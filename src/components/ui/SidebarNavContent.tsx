@@ -40,7 +40,7 @@ export function SidebarNavContent({ onNavigate }: { onNavigate?: () => void }) {
       </nav>
 
       <div className="mt-auto border-t border-slate-200 px-5 py-4">
-        <p className="text-xs text-slate-500">Single-user workspace</p>
+        <p className="text-xs text-slate-500">Nd workspace</p>
         <button
           onClick={handleLogout}
           className="mt-3 flex w-full items-center gap-2 rounded-lg px-2 py-1.5 text-sm font-medium text-slate-500 hover:bg-slate-100 hover:text-slate-700"
