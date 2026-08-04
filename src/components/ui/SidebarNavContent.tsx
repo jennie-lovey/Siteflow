@@ -68,7 +68,7 @@ function SidebarLink({
     <Link
       href={href}
       onClick={onNavigate}
-      className={`flex w-fit items-center gap-2.5 rounded-lg px-3 py-2 text-sm font-medium transition-colors ${
+      className={`flex w-full items-center gap-2.5 rounded-lg px-3 py-2 text-sm font-medium transition-colors ${
         active ? "bg-slate-900 text-white" : "text-slate-600 hover:bg-slate-200/70 hover:text-slate-900"
       }`}
     >
