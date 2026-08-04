@@ -8,7 +8,7 @@ export default function AppLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <div className="flex h-full min-h-screen">
+    <div className="flex min-h-screen">
       <Sidebar />
       <TabletSidebar />
       <div className="flex min-h-screen min-w-0 flex-1 flex-col">
