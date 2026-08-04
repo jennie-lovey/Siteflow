@@ -1,8 +1,8 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { useRouter } from "next/navigation";
-import { ChevronLeft, ChevronRight } from "lucide-react";
+import Link from "next/link";
+import { ChevronLeft, ChevronRight, Eye } from "lucide-react";
 import { StatusBadge } from "@/components/projects/StatusBadge";
 import { PriorityBadge } from "@/components/projects/PriorityBadge";
 import { formatNaira } from "@/lib/utils/currency";
@@ -18,7 +18,6 @@ export function ProjectsListTable({
   projects: Project[];
   financialsByProjectId: Map<string, ProjectFinancials>;
 }) {
-  const router = useRouter();
   const [page, setPage] = useState(1);
 
   const totalPages = Math.max(1, Math.ceil(projects.length / PAGE_SIZE));
@@ -42,7 +41,7 @@ export function ProjectsListTable({
   return (
     <div className="rounded-xl bg-white">
       <div className="overflow-x-auto">
-        <table className="w-full min-w-[760px] text-sm">
+        <table className="w-full min-w-[820px] text-sm">
           <thead>
             <tr className="border-b border-slate-100 text-left text-xs font-medium uppercase tracking-wider text-slate-400">
               <th className="px-6 py-3">Project</th>
@@ -51,6 +50,7 @@ export function ProjectsListTable({
               <th className="px-6 py-3 text-right">Estimate</th>
               <th className="px-6 py-3 text-right">Spent</th>
               <th className="px-6 py-3 text-right">Budget</th>
+              <th className="px-6 py-3 text-right">Actions</th>
             </tr>
           </thead>
           <tbody>
@@ -63,11 +63,7 @@ export function ProjectsListTable({
               const hasBudgetData = estimateTotal > 0 || actualSpent > 0;
 
               return (
-                <tr
-                  key={project.id}
-                  onClick={() => router.push(`/projects/${project.id}`)}
-                  className="cursor-pointer border-b border-slate-100 last:border-0 hover:bg-slate-50"
-                >
+                <tr key={project.id} className="border-b border-slate-100 last:border-0 hover:bg-slate-50">
                   <td className="px-6 py-4">
                     <p className="font-medium text-slate-900">{project.name}</p>
                     <p className="text-xs text-slate-500">{project.project_type}</p>
@@ -96,6 +92,15 @@ export function ProjectsListTable({
                     ) : (
                       <span className="text-slate-300">—</span>
                     )}
+                  </td>
+                  <td className="px-6 py-4 text-right">
+                    <Link
+                      href={`/projects/${project.id}`}
+                      className="inline-flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-xs font-medium text-slate-600 hover:bg-slate-100 hover:text-slate-900"
+                    >
+                      <Eye className="h-3.5 w-3.5" />
+                      View
+                    </Link>
                   </td>
                 </tr>
               );

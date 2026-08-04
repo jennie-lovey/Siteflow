@@ -10,7 +10,7 @@ export default async function TrackerPage({
   params: Promise<{ projectId: string }>;
 }) {
   const { projectId } = await params;
-  const supabase = createServerSupabaseClient();
+  const supabase = await createServerSupabaseClient();
 
   const [{ data: expenses }, { data: notes }] = await Promise.all([
     supabase

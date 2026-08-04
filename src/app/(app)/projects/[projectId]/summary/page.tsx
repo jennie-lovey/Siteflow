@@ -13,7 +13,7 @@ export default async function SummaryPage({
   params: Promise<{ projectId: string }>;
 }) {
   const { projectId } = await params;
-  const supabase = createServerSupabaseClient();
+  const supabase = await createServerSupabaseClient();
 
   const [{ data: project }, { data: financials }] = await Promise.all([
     supabase.from("projects").select("*").eq("id", projectId).single(),

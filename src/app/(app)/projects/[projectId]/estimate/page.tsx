@@ -9,7 +9,7 @@ export default async function EstimatePage({
   params: Promise<{ projectId: string }>;
 }) {
   const { projectId } = await params;
-  const supabase = createServerSupabaseClient();
+  const supabase = await createServerSupabaseClient();
 
   const [{ data: project }, { data: versions }] = await Promise.all([
     supabase.from("projects").select("*").eq("id", projectId).single(),

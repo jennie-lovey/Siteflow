@@ -8,7 +8,7 @@ import type { ReminderItem } from "@/components/dashboard/NotificationBell";
 export const dynamic = "force-dynamic";
 
 export default async function DashboardPage() {
-  const supabase = createServerSupabaseClient();
+  const supabase = await createServerSupabaseClient();
 
   const [{ data: projects, error: projectsError }, { data: financials }] = await Promise.all([
     supabase

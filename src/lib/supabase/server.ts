@@ -1,4 +1,5 @@
-import { createClient } from "@supabase/supabase-js";
+import { createServerClient } from "@supabase/ssr";
+import { cookies } from "next/headers";
 import type { Database } from "@/types/database";
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
@@ -10,9 +11,25 @@ if (!supabaseUrl || !supabaseAnonKey) {
   );
 }
 
-// No auth/session in this app, so the server-side client is functionally
-// identical to the browser client — kept separate only so Server Components
-// import from a clearly "server" module.
-export function createServerSupabaseClient() {
-  return createClient<Database>(supabaseUrl!, supabaseAnonKey!);
+// Reads/writes the auth session via cookies so Server Components see the
+// same session the browser client and middleware do.
+export async function createServerSupabaseClient() {
+  const cookieStore = await cookies();
+
+  return createServerClient<Database>(supabaseUrl!, supabaseAnonKey!, {
+    cookies: {
+      getAll() {
+        return cookieStore.getAll();
+      },
+      setAll(cookiesToSet) {
+        try {
+          cookiesToSet.forEach(({ name, value, options }) => cookieStore.set(name, value, options));
+        } catch {
+          // Called from a Server Component during render, where cookies
+          // can't be set — safe to ignore since middleware refreshes the
+          // session on every request anyway.
+        }
+      },
+    },
+  });
 }
