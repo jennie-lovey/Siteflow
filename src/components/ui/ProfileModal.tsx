@@ -3,6 +3,7 @@
 import { useEffect, useState, type FormEvent } from "react";
 import { X } from "lucide-react";
 import { supabase } from "@/lib/supabase/client";
+import { emailToUsername, usernameToEmail, USERNAME_PATTERN } from "@/lib/auth/username";
 import { Button } from "./Button";
 import { Input, Label } from "./Field";
 
@@ -34,7 +35,7 @@ export function ProfileModal({ open, onClose }: { open: boolean; onClose: () => 
 // Mounted only while the sheet is open (parent returns null when closed), so
 // the data fetch below runs fresh on every open instead of syncing to a prop.
 function ProfileForm() {
-  const [email, setEmail] = useState("");
+  const [username, setUsername] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
@@ -43,18 +44,23 @@ function ProfileForm() {
 
   useEffect(() => {
     supabase.auth.getUser().then(({ data }) => {
-      setEmail(data.user?.email ?? "");
+      setUsername(data.user?.email ? emailToUsername(data.user.email) : "");
       setLoading(false);
     });
   }, []);
 
   async function handleSubmit(e: FormEvent) {
     e.preventDefault();
-    setSubmitting(true);
     setError(null);
     setSuccess(null);
 
-    const updates: { email?: string; password?: string } = { email };
+    if (!USERNAME_PATTERN.test(username.trim())) {
+      setError("Username must be 3-32 characters (letters, numbers, . _ -).");
+      return;
+    }
+
+    setSubmitting(true);
+    const updates: { email?: string; password?: string } = { email: usernameToEmail(username) };
     if (newPassword) updates.password = newPassword;
 
     const { error: updateError } = await supabase.auth.updateUser(updates);
@@ -66,7 +72,7 @@ function ProfileForm() {
       return;
     }
 
-    setSuccess("Saved. If you changed your email, check your inbox to confirm it.");
+    setSuccess("Saved.");
     setNewPassword("");
   }
 
@@ -77,14 +83,14 @@ function ProfileForm() {
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
       <div>
-        <Label htmlFor="profile-email">Email</Label>
+        <Label htmlFor="profile-username">Username</Label>
         <Input
-          id="profile-email"
-          type="email"
-          autoComplete="email"
+          id="profile-username"
+          type="text"
+          autoComplete="username"
           required
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
+          value={username}
+          onChange={(e) => setUsername(e.target.value)}
         />
       </div>
       <div>
