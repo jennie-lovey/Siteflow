@@ -12,11 +12,14 @@ export default function LoginPage() {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   async function handleSignIn(e: FormEvent) {
     e.preventDefault();
+    setError(null);
 
     if (!USERNAME_PATTERN.test(username.trim())) {
+      setError("Username must be 3-32 characters (letters, numbers, . _ -).");
       return;
     }
 
@@ -25,6 +28,7 @@ export default function LoginPage() {
     const { error: signInError } = await supabase.auth.signInWithPassword({ email, password });
 
     if (signInError) {
+      setError(signInError.message);
       setSubmitting(false);
       return;
     }
@@ -69,6 +73,8 @@ export default function LoginPage() {
               placeholder="••••••••"
             />
           </div>
+
+          {error && <p className="text-sm text-red-600">{error}</p>}
 
           <Button type="submit" disabled={submitting} className="w-full justify-center">
             {submitting ? "Signing in..." : "Sign In"}
