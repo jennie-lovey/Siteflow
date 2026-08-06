@@ -8,7 +8,6 @@ import { NotificationBell, type ReminderItem } from "./NotificationBell";
 import { StatCard } from "./StatCard";
 import { ProjectKanbanBoard } from "./ProjectKanbanBoard";
 import { NewProjectModal } from "@/components/projects/NewProjectModal";
-import { ProfileModal } from "@/components/ui/ProfileModal";
 import { formatNaira } from "@/lib/utils/currency";
 import type { Project, ProjectFinancials } from "@/types/domain";
 import type { ProjectStatus } from "@/types/database";
@@ -26,7 +25,6 @@ export function BoardPageContent({
   const [modalOpen, setModalOpen] = useState(false);
   const [modalStatus, setModalStatus] = useState<ProjectStatus | undefined>(undefined);
   const [searchQuery, setSearchQuery] = useState("");
-  const [profileOpen, setProfileOpen] = useState(false);
 
   function openModal(status?: ProjectStatus) {
     setModalStatus(status);
@@ -61,13 +59,9 @@ export function BoardPageContent({
         </div>
         <div className="flex items-center gap-2">
           <NotificationBell reminders={reminders} />
-          <button
-            onClick={() => setProfileOpen(true)}
-            aria-label="Profile"
-            className="flex h-9 w-9 items-center justify-center rounded-full bg-slate-200 text-slate-500 hover:bg-slate-300"
-          >
+          <span className="flex h-9 w-9 items-center justify-center rounded-full bg-slate-200 text-slate-500">
             <User className="h-4 w-4" />
-          </button>
+          </span>
         </div>
       </div>
 
@@ -106,8 +100,6 @@ export function BoardPageContent({
           router.push(`/projects/${project.id}`);
         }}
       />
-
-      <ProfileModal open={profileOpen} onClose={() => setProfileOpen(false)} />
     </div>
   );
 }

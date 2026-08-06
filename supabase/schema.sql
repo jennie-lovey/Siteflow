@@ -144,9 +144,10 @@ left join lateral (
 
 -- ---------------------------------------------------------------------------
 -- Row Level Security
--- Single-user app with email/password login. Policies are scoped to the
--- `authenticated` role, so the anon key alone (without a signed-in session)
--- cannot read or write any data.
+-- No login/auth in this app (single user, accessed via the public anon key).
+-- RLS is left ON with fully permissive policies so Supabase's linter stays
+-- quiet and access can be tightened later without retrofitting RLS from
+-- scratch onto tables that never had it.
 -- ---------------------------------------------------------------------------
 alter table projects enable row level security;
 alter table estimate_versions enable row level security;
@@ -154,8 +155,8 @@ alter table estimate_items enable row level security;
 alter table expenses enable row level security;
 alter table notes enable row level security;
 
-create policy "authenticated full access" on projects for all to authenticated using (true) with check (true);
-create policy "authenticated full access" on estimate_versions for all to authenticated using (true) with check (true);
-create policy "authenticated full access" on estimate_items for all to authenticated using (true) with check (true);
-create policy "authenticated full access" on expenses for all to authenticated using (true) with check (true);
-create policy "authenticated full access" on notes for all to authenticated using (true) with check (true);
+create policy "anon full access" on projects for all using (true) with check (true);
+create policy "anon full access" on estimate_versions for all using (true) with check (true);
+create policy "anon full access" on estimate_items for all using (true) with check (true);
+create policy "anon full access" on expenses for all using (true) with check (true);
+create policy "anon full access" on notes for all using (true) with check (true);

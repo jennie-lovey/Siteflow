@@ -1,4 +1,4 @@
-import { createBrowserClient } from "@supabase/ssr";
+import { createClient } from "@supabase/supabase-js";
 import type { Database } from "@/types/database";
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
@@ -10,7 +10,4 @@ if (!supabaseUrl || !supabaseAnonKey) {
   );
 }
 
-// createBrowserClient (rather than the plain supabase-js createClient) stores
-// the auth session in cookies instead of localStorage, so the server-side
-// client and middleware can read the same session on each request.
-export const supabase = createBrowserClient<Database>(supabaseUrl, supabaseAnonKey);
+export const supabase = createClient<Database>(supabaseUrl, supabaseAnonKey);
