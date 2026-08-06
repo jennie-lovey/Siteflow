@@ -4,7 +4,7 @@ import { useEffect, useState, type FormEvent } from "react";
 import { useRouter } from "next/navigation";
 import { X } from "lucide-react";
 import { supabase } from "@/lib/supabase/client";
-import { emailToUsername, usernameToEmail, USERNAME_PATTERN } from "@/lib/auth/username";
+import { USERNAME_PATTERN } from "@/lib/auth/username";
 import { Button } from "./Button";
 import { Input, Label } from "./Field";
 
@@ -38,14 +38,13 @@ export function ProfileModal({ open, onClose }: { open: boolean; onClose: () => 
 function ProfileForm({ onClose }: { onClose: () => void }) {
   const router = useRouter();
   const [username, setUsername] = useState("");
-  const [newPassword, setNewPassword] = useState("");
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     supabase.auth.getUser().then(({ data }) => {
-      setUsername(data.user?.email ? emailToUsername(data.user.email) : "");
+      setUsername(typeof data.user?.user_metadata?.username === "string" ? data.user.user_metadata.username : "");
       setLoading(false);
     });
   }, []);
@@ -60,10 +59,9 @@ function ProfileForm({ onClose }: { onClose: () => void }) {
     }
 
     setSubmitting(true);
-    const updates: { email?: string; password?: string } = { email: usernameToEmail(username) };
-    if (newPassword) updates.password = newPassword;
-
-    const { error: updateError } = await supabase.auth.updateUser(updates);
+    const { error: updateError } = await supabase.auth.updateUser({
+      data: { username: username.trim() },
+    });
 
     setSubmitting(false);
 
@@ -92,17 +90,6 @@ function ProfileForm({ onClose }: { onClose: () => void }) {
           required
           value={username}
           onChange={(e) => setUsername(e.target.value)}
-        />
-      </div>
-      <div>
-        <Label htmlFor="profile-password">New Password</Label>
-        <Input
-          id="profile-password"
-          type="password"
-          autoComplete="new-password"
-          value={newPassword}
-          onChange={(e) => setNewPassword(e.target.value)}
-          placeholder="Leave blank to keep current password"
         />
       </div>
 
