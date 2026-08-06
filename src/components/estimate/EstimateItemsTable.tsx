@@ -118,16 +118,48 @@ function CategoryCell({
   // shows the custom field immediately, even before anything is typed/saved.
   const [showCustom, setShowCustom] = useState(!isPresetValue);
 
+  if (showCustom) {
+    return (
+      <div className="flex items-center gap-1">
+        <input
+          defaultValue={isPresetValue ? "" : item.category}
+          onBlur={(e) => onUpdate(item.id, { category: e.target.value.trim() || "Custom" })}
+          onKeyDown={(e) => {
+            if (e.key === "Enter") {
+              // Save without blurring, so the cursor stays put and the user
+              // can keep typing or editing without losing their place.
+              e.preventDefault();
+              onUpdate(item.id, { category: e.currentTarget.value.trim() || "Custom" });
+            }
+          }}
+          placeholder="Type your category, then press Enter to save"
+          autoFocus
+          className="rounded border border-slate-200 bg-white px-1.5 py-1 text-xs focus:border-blue-400 focus:outline-none"
+        />
+        <button
+          type="button"
+          onClick={() => {
+            setShowCustom(false);
+            onUpdate(item.id, { category: ESTIMATE_CATEGORY_PRESETS[0] });
+          }}
+          title="Choose from the list instead"
+          className="text-xs text-slate-400 hover:text-slate-600"
+        >
+          ✕
+        </button>
+      </div>
+    );
+  }
+
   return (
     <div className="flex flex-col gap-1">
       <select
-        value={showCustom ? "Add Category" : item.category}
+        value={item.category}
         onChange={(e) => {
           const value = e.target.value;
           if (value === "Add Category") {
             setShowCustom(true);
           } else {
-            setShowCustom(false);
             onUpdate(item.id, { category: value });
           }
         }}
@@ -140,15 +172,6 @@ function CategoryCell({
           </option>
         ))}
       </select>
-      {showCustom && (
-        <input
-          defaultValue={isPresetValue ? "" : item.category}
-          onBlur={(e) => onUpdate(item.id, { category: e.target.value.trim() || "Custom" })}
-          placeholder="Type your category, then click away to save"
-          autoFocus
-          className="rounded border border-slate-200 bg-white px-1.5 py-1 text-xs focus:border-blue-400 focus:outline-none"
-        />
-      )}
     </div>
   );
 }
