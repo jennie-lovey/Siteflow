@@ -3,13 +3,15 @@
 import { useState, type FormEvent } from "react";
 import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabase/client";
-import { USERNAME_PATTERN } from "@/lib/auth/username";
 import { Button } from "@/components/ui/Button";
 import { Input, Label } from "@/components/ui/Field";
 
+const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
 export default function LoginPage() {
   const router = useRouter();
-  const [username, setUsername] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -17,14 +19,15 @@ export default function LoginPage() {
     e.preventDefault();
     setError(null);
 
-    if (!USERNAME_PATTERN.test(username.trim())) {
-      setError("Username must be 3-32 characters (letters, numbers, . _ -).");
+    if (!EMAIL_PATTERN.test(email.trim())) {
+      setError("Please enter a valid email address.");
       return;
     }
 
     setSubmitting(true);
-    const { error: signInError } = await supabase.auth.signInAnonymously({
-      options: { data: { username: username.trim() } },
+    const { error: signInError } = await supabase.auth.signInWithPassword({
+      email: email.trim(),
+      password,
     });
 
     if (signInError) {
@@ -50,15 +53,27 @@ export default function LoginPage() {
 
         <form onSubmit={handleSignIn} className="space-y-4 rounded-xl bg-white p-6">
           <div>
-            <Label htmlFor="username">Username</Label>
+            <Label htmlFor="email">Email</Label>
             <Input
-              id="username"
-              type="text"
-              autoComplete="username"
+              id="email"
+              type="email"
+              autoComplete="email"
               required
-              value={username}
-              onChange={(e) => setUsername(e.target.value)}
-              placeholder="e.g. otito"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              placeholder="you@example.com"
+            />
+          </div>
+          <div>
+            <Label htmlFor="password">Password</Label>
+            <Input
+              id="password"
+              type="password"
+              autoComplete="current-password"
+              required
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              placeholder="••••••••"
             />
           </div>
 

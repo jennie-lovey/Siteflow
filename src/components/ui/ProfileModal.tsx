@@ -4,7 +4,6 @@ import { useEffect, useState, type FormEvent } from "react";
 import { useRouter } from "next/navigation";
 import { X } from "lucide-react";
 import { supabase } from "@/lib/supabase/client";
-import { USERNAME_PATTERN } from "@/lib/auth/username";
 import { Button } from "./Button";
 import { Input, Label } from "./Field";
 
@@ -37,14 +36,15 @@ export function ProfileModal({ open, onClose }: { open: boolean; onClose: () => 
 // the data fetch below runs fresh on every open instead of syncing to a prop.
 function ProfileForm({ onClose }: { onClose: () => void }) {
   const router = useRouter();
-  const [username, setUsername] = useState("");
+  const [email, setEmail] = useState("");
+  const [newPassword, setNewPassword] = useState("");
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     supabase.auth.getUser().then(({ data }) => {
-      setUsername(typeof data.user?.user_metadata?.username === "string" ? data.user.user_metadata.username : "");
+      setEmail(data.user?.email ?? "");
       setLoading(false);
     });
   }, []);
@@ -52,16 +52,12 @@ function ProfileForm({ onClose }: { onClose: () => void }) {
   async function handleSubmit(e: FormEvent) {
     e.preventDefault();
     setError(null);
-
-    if (!USERNAME_PATTERN.test(username.trim())) {
-      setError("Username must be 3-32 characters (letters, numbers, . _ -).");
-      return;
-    }
-
     setSubmitting(true);
-    const { error: updateError } = await supabase.auth.updateUser({
-      data: { username: username.trim() },
-    });
+
+    const updates: { email?: string; password?: string } = { email: email.trim() };
+    if (newPassword) updates.password = newPassword;
+
+    const { error: updateError } = await supabase.auth.updateUser(updates);
 
     setSubmitting(false);
 
@@ -82,14 +78,25 @@ function ProfileForm({ onClose }: { onClose: () => void }) {
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
       <div>
-        <Label htmlFor="profile-username">Username</Label>
+        <Label htmlFor="profile-email">Email</Label>
         <Input
-          id="profile-username"
-          type="text"
-          autoComplete="username"
+          id="profile-email"
+          type="email"
+          autoComplete="email"
           required
-          value={username}
-          onChange={(e) => setUsername(e.target.value)}
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+        />
+      </div>
+      <div>
+        <Label htmlFor="profile-password">New Password</Label>
+        <Input
+          id="profile-password"
+          type="password"
+          autoComplete="new-password"
+          value={newPassword}
+          onChange={(e) => setNewPassword(e.target.value)}
+          placeholder="Leave blank to keep current password"
         />
       </div>
 
