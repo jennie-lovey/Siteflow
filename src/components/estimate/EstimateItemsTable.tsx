@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import { ESTIMATE_CATEGORY_PRESETS } from "@/lib/constants";
 import { selectChevronStyle } from "@/components/ui/Field";
 import { formatNaira } from "@/lib/utils/currency";
@@ -112,15 +113,23 @@ function CategoryCell({
   item: EstimateItem;
   onUpdate: EstimateItemsTableProps["onUpdate"];
 }) {
-  const isPreset = (ESTIMATE_CATEGORY_PRESETS as readonly string[]).includes(item.category);
+  const isPresetValue = (ESTIMATE_CATEGORY_PRESETS as readonly string[]).includes(item.category);
+  // Own state (not just derived from item.category) so picking "Other" shows
+  // the custom field immediately, even before anything has been typed/saved.
+  const [showCustom, setShowCustom] = useState(!isPresetValue);
 
   return (
     <div className="flex flex-col gap-1">
       <select
-        defaultValue={isPreset ? item.category : "Other"}
+        value={showCustom ? "Other" : item.category}
         onChange={(e) => {
           const value = e.target.value;
-          if (value !== "Other") onUpdate(item.id, { category: value });
+          if (value === "Other") {
+            setShowCustom(true);
+          } else {
+            setShowCustom(false);
+            onUpdate(item.id, { category: value });
+          }
         }}
         className="appearance-none rounded border border-transparent bg-transparent py-1 pl-1.5 pr-6 focus:border-blue-400 focus:bg-white focus:outline-none"
         style={{ ...selectChevronStyle, backgroundPosition: "right 0.15rem center", backgroundSize: "0.85rem" }}
@@ -131,11 +140,12 @@ function CategoryCell({
           </option>
         ))}
       </select>
-      {!isPreset && (
+      {showCustom && (
         <input
-          defaultValue={item.category}
-          onBlur={(e) => onUpdate(item.id, { category: e.target.value || "Other" })}
+          defaultValue={isPresetValue ? "" : item.category}
+          onBlur={(e) => onUpdate(item.id, { category: e.target.value.trim() || "Other" })}
           placeholder="Custom category"
+          autoFocus
           className="rounded border border-slate-200 bg-white px-1.5 py-1 text-xs focus:border-blue-400 focus:outline-none"
         />
       )}

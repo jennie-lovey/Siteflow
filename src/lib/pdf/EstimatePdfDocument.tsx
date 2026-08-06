@@ -1,10 +1,26 @@
-import { Document, Page, Text, View, StyleSheet } from "@react-pdf/renderer";
+import { Document, Page, Text, View, StyleSheet, Font } from "@react-pdf/renderer";
 import { formatNaira } from "@/lib/utils/currency";
 import { computeGrandTotal, computeLineTotal } from "@/lib/utils/totals";
 import type { EstimateItem, Project } from "@/types/domain";
 
+// The standard PDF fonts (Helvetica, etc.) don't include the ₦ glyph, so it
+// renders blank. Noto Sans does — verified to cover U+20A6 (Naira Sign).
+Font.register({
+  family: "Noto Sans",
+  fonts: [
+    {
+      src: "https://raw.githubusercontent.com/googlefonts/noto-fonts/main/hinted/ttf/NotoSans/NotoSans-Regular.ttf",
+      fontWeight: 400,
+    },
+    {
+      src: "https://raw.githubusercontent.com/googlefonts/noto-fonts/main/hinted/ttf/NotoSans/NotoSans-Bold.ttf",
+      fontWeight: 700,
+    },
+  ],
+});
+
 const styles = StyleSheet.create({
-  page: { padding: 40, fontSize: 10, fontFamily: "Helvetica", color: "#0f172a" },
+  page: { padding: 40, fontSize: 10, fontFamily: "Noto Sans", color: "#0f172a" },
   headerRow: { flexDirection: "row", justifyContent: "space-between", marginBottom: 24 },
   // Reserved space for a business logo/name once branding is added.
   brandBlock: { width: 200 },
