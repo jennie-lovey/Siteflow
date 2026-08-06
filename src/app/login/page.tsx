@@ -24,18 +24,7 @@ export default function LoginPage() {
     const email = usernameToEmail(username);
     const { error: signInError } = await supabase.auth.signInWithPassword({ email, password });
 
-    if (!signInError) {
-      router.push("/");
-      router.refresh();
-      return;
-    }
-
-    // No account with this username/password yet. There's no separate
-    // sign-up page, so the first submission for a new username creates the
-    // account with whatever password was entered.
-    const { error: signUpError } = await supabase.auth.signUp({ email, password });
-
-    if (signUpError) {
+    if (signInError) {
       setSubmitting(false);
       return;
     }
