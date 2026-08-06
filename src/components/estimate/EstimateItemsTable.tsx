@@ -114,17 +114,17 @@ function CategoryCell({
   onUpdate: EstimateItemsTableProps["onUpdate"];
 }) {
   const isPresetValue = (ESTIMATE_CATEGORY_PRESETS as readonly string[]).includes(item.category);
-  // Own state (not just derived from item.category) so picking "Other" shows
-  // the custom field immediately, even before anything has been typed/saved.
+  // Own state (not just derived from item.category) so picking "Add Category"
+  // shows the custom field immediately, even before anything is typed/saved.
   const [showCustom, setShowCustom] = useState(!isPresetValue);
 
   return (
     <div className="flex flex-col gap-1">
       <select
-        value={showCustom ? "Other" : item.category}
+        value={showCustom ? "Add Category" : item.category}
         onChange={(e) => {
           const value = e.target.value;
-          if (value === "Other") {
+          if (value === "Add Category") {
             setShowCustom(true);
           } else {
             setShowCustom(false);
@@ -143,8 +143,8 @@ function CategoryCell({
       {showCustom && (
         <input
           defaultValue={isPresetValue ? "" : item.category}
-          onBlur={(e) => onUpdate(item.id, { category: e.target.value.trim() || "Other" })}
-          placeholder="Custom category"
+          onBlur={(e) => onUpdate(item.id, { category: e.target.value.trim() || "Custom" })}
+          placeholder="Type your category, then click away to save"
           autoFocus
           className="rounded border border-slate-200 bg-white px-1.5 py-1 text-xs focus:border-blue-400 focus:outline-none"
         />

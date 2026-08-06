@@ -31,7 +31,7 @@ export const ESTIMATE_CATEGORY_PRESETS = [
   "Labour",
   "Transportation",
   "Miscellaneous",
-  "Other",
+  "Add Category",
 ] as const;
 
 export const EXPENSE_CATEGORY_OPTIONS: { value: ExpenseCategory; label: string }[] = [
