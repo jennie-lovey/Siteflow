@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState, type FormEvent } from "react";
+import { useRouter } from "next/navigation";
 import { X } from "lucide-react";
 import { supabase } from "@/lib/supabase/client";
 import { emailToUsername, usernameToEmail, USERNAME_PATTERN } from "@/lib/auth/username";
@@ -25,7 +26,7 @@ export function ProfileModal({ open, onClose }: { open: boolean; onClose: () => 
           </button>
         </div>
         <div className="flex-1 overflow-y-auto px-5 py-5">
-          <ProfileForm />
+          <ProfileForm onClose={onClose} />
         </div>
       </div>
     </div>
@@ -34,13 +35,13 @@ export function ProfileModal({ open, onClose }: { open: boolean; onClose: () => 
 
 // Mounted only while the sheet is open (parent returns null when closed), so
 // the data fetch below runs fresh on every open instead of syncing to a prop.
-function ProfileForm() {
+function ProfileForm({ onClose }: { onClose: () => void }) {
+  const router = useRouter();
   const [username, setUsername] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [success, setSuccess] = useState<string | null>(null);
 
   useEffect(() => {
     supabase.auth.getUser().then(({ data }) => {
@@ -52,7 +53,6 @@ function ProfileForm() {
   async function handleSubmit(e: FormEvent) {
     e.preventDefault();
     setError(null);
-    setSuccess(null);
 
     if (!USERNAME_PATTERN.test(username.trim())) {
       setError("Username must be 3-32 characters (letters, numbers, . _ -).");
@@ -72,8 +72,9 @@ function ProfileForm() {
       return;
     }
 
-    setSuccess("Saved.");
-    setNewPassword("");
+    onClose();
+    router.push("/");
+    router.refresh();
   }
 
   if (loading) {
@@ -106,7 +107,6 @@ function ProfileForm() {
       </div>
 
       {error && <p className="text-sm text-red-600">{error}</p>}
-      {success && <p className="text-sm text-emerald-600">{success}</p>}
 
       <Button type="submit" disabled={submitting} className="w-full justify-center">
         {submitting ? "Saving..." : "Save Changes"}
