@@ -30,7 +30,10 @@ export async function proxy(request: NextRequest) {
     data: { user },
   } = await supabase.auth.getUser();
 
-  const isLoginPage = request.nextUrl.pathname.startsWith("/login");
+  const pathname = request.nextUrl.pathname;
+  const isLoginPage = pathname.startsWith("/login");
+  // The email-link landing route must work before a session exists.
+  const isPublicRoute = isLoginPage || pathname.startsWith("/auth/");
   const isAdmin = isAdminEmail(user?.email);
 
   // Signed in as someone other than the admin: end that session and bounce
@@ -45,7 +48,7 @@ export async function proxy(request: NextRequest) {
     return redirect;
   }
 
-  if (!user && !isLoginPage) {
+  if (!user && !isPublicRoute) {
     const url = request.nextUrl.clone();
     url.pathname = "/login";
     return NextResponse.redirect(url);
