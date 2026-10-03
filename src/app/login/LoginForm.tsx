@@ -141,20 +141,7 @@ export function LoginForm({ allowSignup }: { allowSignup: boolean }) {
 
           {mode !== "forgot" && (
             <div>
-              <div className="mb-1 flex items-center justify-between">
-                <label htmlFor="password" className="block text-sm font-medium text-slate-700">
-                  Password
-                </label>
-                {mode === "signin" && (
-                  <button
-                    type="button"
-                    onClick={() => switchMode("forgot")}
-                    className="text-xs font-medium text-blue-600 hover:underline"
-                  >
-                    Forgot password?
-                  </button>
-                )}
-              </div>
+              <Label htmlFor="password">Password</Label>
               <PasswordInput
                 id="password"
                 autoComplete={mode === "signup" ? "new-password" : "current-password"}
@@ -163,6 +150,15 @@ export function LoginForm({ allowSignup }: { allowSignup: boolean }) {
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="••••••••"
               />
+              {mode === "signin" && (
+                <button
+                  type="button"
+                  onClick={() => switchMode("forgot")}
+                  className="mt-2 text-xs font-medium text-blue-600 hover:underline"
+                >
+                  Forgot password?
+                </button>
+              )}
             </div>
           )}
 
