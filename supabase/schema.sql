@@ -114,7 +114,9 @@ create index notes_project_id_idx on notes(project_id);
 -- ---------------------------------------------------------------------------
 -- project_financials view: current estimate total vs. actual spent
 -- ---------------------------------------------------------------------------
-create view project_financials as
+-- security_invoker makes the view obey the querying user's RLS instead of the
+-- view creator's (Postgres views are SECURITY DEFINER by default).
+create view project_financials with (security_invoker = true) as
 select
   p.id as project_id,
   coalesce(v1.total, 0) as original_estimate_total,
