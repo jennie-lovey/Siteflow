@@ -19,7 +19,7 @@ const COPY: Record<Mode, { title: string; subtitle: string; button: string; busy
   forgot: { title: "Reset your password", subtitle: "We'll email you a reset link", button: "Send Reset Link", busy: "Sending..." },
 };
 
-export function LoginForm({ notice }: { notice?: string }) {
+export function LoginForm({ notice, allowSignup }: { notice?: string; allowSignup: boolean }) {
   const router = useRouter();
   const [mode, setMode] = useState<Mode>("signin");
   const [email, setEmail] = useState("");
@@ -178,12 +178,14 @@ export function LoginForm({ notice }: { notice?: string }) {
 
           <p className="text-center text-sm text-slate-500">
             {mode === "signin" ? (
+              allowSignup && (
               <>
                 First time here?{" "}
                 <button type="button" onClick={() => switchMode("signup")} className="font-medium text-blue-600 hover:underline">
                   Create admin account
                 </button>
               </>
+              )
             ) : (
               <button type="button" onClick={() => switchMode("signin")} className="font-medium text-blue-600 hover:underline">
                 Back to sign in
