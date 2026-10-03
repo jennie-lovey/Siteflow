@@ -1,16 +1,24 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
-import { LayoutGrid, ListChecks } from "lucide-react";
+import { usePathname, useRouter } from "next/navigation";
+import { LayoutGrid, ListChecks, LogOut } from "lucide-react";
+import { supabase } from "@/lib/supabase/client";
 
 export function TabletSidebar() {
   const pathname = usePathname();
+  const router = useRouter();
 
   const links = [
     { href: "/", label: "Dashboard", icon: LayoutGrid, active: pathname === "/" },
     { href: "/projects", label: "Projects", icon: ListChecks, active: pathname.startsWith("/projects") },
   ];
+
+  async function handleLogout() {
+    await supabase.auth.signOut();
+    router.push("/login");
+    router.refresh();
+  }
 
   return (
     <aside className="hidden w-16 shrink-0 flex-col items-center border-r border-slate-200 bg-white py-5 md:flex lg:hidden">
@@ -32,6 +40,14 @@ export function TabletSidebar() {
           </Link>
         ))}
       </nav>
+      <button
+        onClick={handleLogout}
+        title="Logout"
+        aria-label="Logout"
+        className="mt-auto flex h-10 w-10 items-center justify-center rounded-lg text-slate-400 hover:bg-slate-100 hover:text-slate-700"
+      >
+        <LogOut className="h-5 w-5" />
+      </button>
     </aside>
   );
 }
