@@ -145,11 +145,46 @@ left join lateral (
 ) exp on true;
 
 -- ---------------------------------------------------------------------------
+-- Single admin account
+-- The first account ever created becomes the admin. A trigger on auth.users
+-- then rejects every later sign-up (even direct API calls), so nobody else
+-- can ever get an account. app_setup tells the login page whether to still
+-- offer "Create admin account".
+-- ---------------------------------------------------------------------------
+create table app_setup (
+  id boolean primary key default true check (id),
+  admin_created boolean not null default false
+);
+
+insert into app_setup (id, admin_created)
+values (true, exists (select 1 from auth.users));
+
+alter table app_setup enable row level security;
+create policy "anyone can read setup state" on app_setup for select to anon, authenticated using (true);
+
+create or replace function public.allow_only_first_user()
+returns trigger
+language plpgsql
+security definer
+set search_path = ''
+as $$
+begin
+  if (select admin_created from public.app_setup where id) then
+    raise exception 'SiteFlow already has an admin account';
+  end if;
+  update public.app_setup set admin_created = true where id;
+  return new;
+end;
+$$;
+
+create trigger only_one_user
+  before insert on auth.users
+  for each row execute function public.allow_only_first_user();
+
+-- ---------------------------------------------------------------------------
 -- Row Level Security
--- No login/auth in this app (single user, accessed via the public anon key).
--- RLS is left ON with fully permissive policies so Supabase's linter stays
--- quiet and access can be tightened later without retrofitting RLS from
--- scratch onto tables that never had it.
+-- Only signed-in users can touch data, and (because of the trigger above)
+-- the only user that can exist is the admin.
 -- ---------------------------------------------------------------------------
 alter table projects enable row level security;
 alter table estimate_versions enable row level security;
@@ -157,8 +192,8 @@ alter table estimate_items enable row level security;
 alter table expenses enable row level security;
 alter table notes enable row level security;
 
-create policy "anon full access" on projects for all using (true) with check (true);
-create policy "anon full access" on estimate_versions for all using (true) with check (true);
-create policy "anon full access" on estimate_items for all using (true) with check (true);
-create policy "anon full access" on expenses for all using (true) with check (true);
-create policy "anon full access" on notes for all using (true) with check (true);
+create policy "admin full access" on projects for all to authenticated using (true) with check (true);
+create policy "admin full access" on estimate_versions for all to authenticated using (true) with check (true);
+create policy "admin full access" on estimate_items for all to authenticated using (true) with check (true);
+create policy "admin full access" on expenses for all to authenticated using (true) with check (true);
+create policy "admin full access" on notes for all to authenticated using (true) with check (true);

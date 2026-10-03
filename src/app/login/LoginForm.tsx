@@ -6,7 +6,6 @@ import { supabase } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/Button";
 import { Input, Label } from "@/components/ui/Field";
 import { PasswordInput } from "@/components/ui/PasswordInput";
-import { isAllowedEmail } from "./actions";
 
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const MIN_PASSWORD_LENGTH = 8;
@@ -15,17 +14,17 @@ type Mode = "signin" | "signup" | "forgot";
 
 const COPY: Record<Mode, { title: string; subtitle: string; button: string; busy: string }> = {
   signin: { title: "Sign in to SiteFlow", subtitle: "Admin access only", button: "Sign In", busy: "Signing in..." },
-  signup: { title: "Create admin account", subtitle: "First-time setup", button: "Create Account", busy: "Creating account..." },
+  signup: { title: "Create admin account", subtitle: "You'll be the only person who can sign in", button: "Create Account", busy: "Creating account..." },
   forgot: { title: "Reset your password", subtitle: "We'll email you a reset link", button: "Send Reset Link", busy: "Sending..." },
 };
 
-export function LoginForm({ notice, allowSignup }: { notice?: string; allowSignup: boolean }) {
+export function LoginForm({ allowSignup }: { allowSignup: boolean }) {
   const router = useRouter();
   const [mode, setMode] = useState<Mode>("signin");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [submitting, setSubmitting] = useState(false);
-  const [error, setError] = useState<string | null>(notice ?? null);
+  const [error, setError] = useState<string | null>(null);
   const [info, setInfo] = useState<string | null>(null);
 
   function switchMode(next: Mode) {
@@ -62,13 +61,6 @@ export function LoginForm({ notice, allowSignup }: { notice?: string; allowSignu
         return;
       }
 
-      // Sign-up and password reset are admin-only: other addresses are refused
-      // before anything is sent to Supabase.
-      if (!(await isAllowedEmail(trimmed))) {
-        setError("This email is not allowed to access SiteFlow.");
-        return;
-      }
-
       if (mode === "signup") {
         if (password.length < MIN_PASSWORD_LENGTH) {
           setError(`Password must be at least ${MIN_PASSWORD_LENGTH} characters.`);
@@ -89,7 +81,12 @@ export function LoginForm({ notice, allowSignup }: { notice?: string; allowSignu
           return;
         }
         if (signUpError) {
-          setError(signUpError.message);
+          setError(
+            /already has an admin/i.test(signUpError.message)
+              ? "An admin account already exists. Please sign in."
+              : signUpError.message
+          );
+          if (/already has an admin/i.test(signUpError.message)) setMode("signin");
           return;
         }
         if (data.session) {

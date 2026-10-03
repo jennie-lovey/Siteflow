@@ -1,6 +1,5 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
-import { isAdminEmail } from "@/lib/auth/admin";
 
 export async function proxy(request: NextRequest) {
   let supabaseResponse = NextResponse.next({ request });
@@ -34,19 +33,6 @@ export async function proxy(request: NextRequest) {
   const isLoginPage = pathname.startsWith("/login");
   // The email-link landing route must work before a session exists.
   const isPublicRoute = isLoginPage || pathname.startsWith("/auth/");
-  const isAdmin = isAdminEmail(user?.email);
-
-  // Signed in as someone other than the admin: end that session and bounce
-  // them to the login page, carrying the cleared auth cookies along.
-  if (user && !isAdmin) {
-    await supabase.auth.signOut();
-    const url = request.nextUrl.clone();
-    url.pathname = "/login";
-    url.search = "?error=not-admin";
-    const redirect = NextResponse.redirect(url);
-    supabaseResponse.cookies.getAll().forEach((cookie) => redirect.cookies.set(cookie));
-    return redirect;
-  }
 
   if (!user && !isPublicRoute) {
     const url = request.nextUrl.clone();
@@ -54,7 +40,7 @@ export async function proxy(request: NextRequest) {
     return NextResponse.redirect(url);
   }
 
-  if (isAdmin && isLoginPage) {
+  if (user && isLoginPage) {
     const url = request.nextUrl.clone();
     url.pathname = "/";
     return NextResponse.redirect(url);
