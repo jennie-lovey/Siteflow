@@ -32,7 +32,7 @@ export async function proxy(request: NextRequest) {
   const pathname = request.nextUrl.pathname;
   const isLoginPage = pathname.startsWith("/login");
   // The email-link landing route must work before a session exists.
-  const isPublicRoute = isLoginPage || pathname.startsWith("/auth/");
+  const isPublicRoute = isLoginPage || pathname.startsWith("/auth/") || pathname.startsWith("/setup");
 
   if (!user && !isPublicRoute) {
     const url = request.nextUrl.clone();
