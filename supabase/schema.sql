@@ -146,10 +146,10 @@ left join lateral (
 
 -- ---------------------------------------------------------------------------
 -- Single admin account
--- The first account ever created becomes the admin. A trigger on auth.users
--- then rejects every later sign-up (even direct API calls), so nobody else
--- can ever get an account. app_setup tells the login page whether to still
--- offer "Create admin account".
+-- There is no sign-up page. The admin is added by hand in Supabase
+-- (Authentication -> Users -> Add user). A trigger on auth.users rejects every
+-- account after the first (even direct API sign-up calls), so nobody else can
+-- ever get one.
 -- ---------------------------------------------------------------------------
 create table app_setup (
   id boolean primary key default true check (id),
