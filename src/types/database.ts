@@ -119,6 +119,12 @@ export interface Database {
           }
         ];
       };
+      app_setup: {
+        Row: { id: boolean; admin_created: boolean };
+        Insert: { id?: boolean; admin_created?: boolean };
+        Update: { id?: boolean; admin_created?: boolean };
+        Relationships: [];
+      };
       notes: {
         Row: {
           id: string;

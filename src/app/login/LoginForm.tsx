@@ -8,15 +8,17 @@ import { Input, Label } from "@/components/ui/Field";
 import { PasswordInput } from "@/components/ui/PasswordInput";
 
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+const MIN_PASSWORD_LENGTH = 8;
 
-type Mode = "signin" | "forgot";
+type Mode = "signin" | "signup" | "forgot";
 
 const COPY: Record<Mode, { title: string; subtitle: string; button: string; busy: string }> = {
   signin: { title: "Sign in to SiteFlow", subtitle: "Admin access only", button: "Sign In", busy: "Signing in..." },
+  signup: { title: "Create admin account", subtitle: "You'll be the only person who can sign in", button: "Create Account", busy: "Creating account..." },
   forgot: { title: "Reset your password", subtitle: "We'll email you a reset link", button: "Send Reset Link", busy: "Sending..." },
 };
 
-export function LoginForm() {
+export function LoginForm({ allowSignup }: { allowSignup: boolean }) {
   const router = useRouter();
   const [mode, setMode] = useState<Mode>("signin");
   const [email, setEmail] = useState("");
@@ -49,13 +51,51 @@ export function LoginForm() {
         if (signInError) {
           setError(
             signInError.message === "Invalid login credentials"
-              ? "Incorrect email or password."
+              ? "Incorrect email or password. First time here? Create your admin account below."
               : signInError.message
           );
           return;
         }
         router.push("/");
         router.refresh();
+        return;
+      }
+
+      if (mode === "signup") {
+        if (password.length < MIN_PASSWORD_LENGTH) {
+          setError(`Password must be at least ${MIN_PASSWORD_LENGTH} characters.`);
+          return;
+        }
+        const { data, error: signUpError } = await supabase.auth.signUp({
+          email: trimmed,
+          password,
+          options: { emailRedirectTo: `${window.location.origin}/auth/callback?next=/` },
+        });
+        // With email confirmation on, Supabase hides duplicates by returning a
+        // user with no identities instead of an error.
+        const alreadyRegistered =
+          /already registered/i.test(signUpError?.message ?? "") || data.user?.identities?.length === 0;
+        if (alreadyRegistered) {
+          setMode("signin");
+          setInfo("You already have an account. Sign in with your password, or use Forgot password.");
+          return;
+        }
+        if (signUpError) {
+          setError(
+            /already has an admin/i.test(signUpError.message)
+              ? "An admin account already exists. Please sign in."
+              : signUpError.message
+          );
+          if (/already has an admin/i.test(signUpError.message)) setMode("signin");
+          return;
+        }
+        if (data.session) {
+          router.push("/");
+          router.refresh();
+          return;
+        }
+        setInfo(`We sent a confirmation link to ${trimmed}. Click it, then come back and sign in.`);
+        setMode("signin");
         return;
       }
 
@@ -99,12 +139,12 @@ export function LoginForm() {
             />
           </div>
 
-          {mode === "signin" && (
+          {mode !== "forgot" && (
             <div>
               <Label htmlFor="password">Password</Label>
               <PasswordInput
                 id="password"
-                autoComplete="current-password"
+                autoComplete={mode === "signup" ? "new-password" : "current-password"}
                 required
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
@@ -129,13 +169,22 @@ export function LoginForm() {
             {submitting ? copy.busy : copy.button}
           </Button>
 
-          {mode === "forgot" && (
-            <p className="text-center text-sm text-slate-500">
+          <p className="text-center text-sm text-slate-500">
+            {mode === "signin" ? (
+              allowSignup && (
+              <>
+                First time here?{" "}
+                <button type="button" onClick={() => switchMode("signup")} className="font-medium text-blue-600 hover:underline">
+                  Create admin account
+                </button>
+              </>
+              )
+            ) : (
               <button type="button" onClick={() => switchMode("signin")} className="font-medium text-blue-600 hover:underline">
                 Back to sign in
               </button>
-            </p>
-          )}
+            )}
+          </p>
         </form>
       </div>
     </div>
