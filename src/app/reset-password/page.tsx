@@ -6,8 +6,7 @@ import { supabase } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/Button";
 import { Label } from "@/components/ui/Field";
 import { PasswordInput } from "@/components/ui/PasswordInput";
-
-const MIN_PASSWORD_LENGTH = 8;
+import { PASSWORD_HINT, validatePassword } from "@/lib/auth/password";
 
 export default function ResetPasswordPage() {
   const router = useRouter();
@@ -20,8 +19,9 @@ export default function ResetPasswordPage() {
     e.preventDefault();
     setError(null);
 
-    if (password.length < MIN_PASSWORD_LENGTH) {
-      setError(`Password must be at least ${MIN_PASSWORD_LENGTH} characters.`);
+    const passwordError = validatePassword(password);
+    if (passwordError) {
+      setError(passwordError);
       return;
     }
     if (password !== confirm) {
@@ -62,6 +62,7 @@ export default function ResetPasswordPage() {
               onChange={(e) => setPassword(e.target.value)}
               placeholder="••••••••"
             />
+            <p className="mt-1 text-xs text-slate-500">{PASSWORD_HINT}</p>
           </div>
           <div>
             <Label htmlFor="confirm">Confirm password</Label>

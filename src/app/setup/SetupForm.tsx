@@ -6,9 +6,9 @@ import { supabase } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/Button";
 import { Input, Label } from "@/components/ui/Field";
 import { PasswordInput } from "@/components/ui/PasswordInput";
+import { PASSWORD_HINT, validatePassword } from "@/lib/auth/password";
 
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-const MIN_PASSWORD_LENGTH = 8;
 
 export function SetupForm() {
   const router = useRouter();
@@ -28,8 +28,9 @@ export function SetupForm() {
       setError("Please enter a valid email address.");
       return;
     }
-    if (password.length < MIN_PASSWORD_LENGTH) {
-      setError(`Password must be at least ${MIN_PASSWORD_LENGTH} characters.`);
+    const passwordError = validatePassword(password);
+    if (passwordError) {
+      setError(passwordError);
       return;
     }
 
@@ -93,6 +94,7 @@ export function SetupForm() {
               onChange={(e) => setPassword(e.target.value)}
               placeholder="••••••••"
             />
+            <p className="mt-1 text-xs text-slate-500">{PASSWORD_HINT}</p>
           </div>
 
           {info && <p className="text-sm text-emerald-700">{info}</p>}
